@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json())
 app.use("/images", express.static(path.join(__dirname, "../assets")))
 
-
+app.use(express.static(path.resolve(__dirname, "../dist"), { maxAge: "1y", etag: false }))
 async function start() {
 
   const mongo = new MongoClient(`mongodb+srv://iam:yrZw6IVV2qL0C2zZ@cluster0.3qvtu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`)
@@ -31,7 +31,7 @@ async function start() {
         cart: { id: req.body.id, quantity: req.body.quantity }
       }
     })
-    
+
     res.json((await db.collection("users").findOne({ id: req.params.userID })).cart);
   })
   app.delete('/api/users/:userID/cart/:id', (req, res) => {
@@ -39,8 +39,14 @@ async function start() {
     res.json(cartItems)
   })
 
-  app.listen(8000, () => {
-    console.log('listening at 8000');
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../dist/index.html"))
+  })
+
+  const port = process.env.PORT || 8000
+
+  app.listen(port, () => {
+    console.log('listening at ' + port);
   })
 }
 
